@@ -20,13 +20,27 @@ class _NewSessionPageState extends State<NewSessionPage> {
   String _intensity = 'Medium';
   int _energy = 3;
 
+  void _showValidationError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
   void _saveSession() {
     final distance = double.tryParse(_distanceController.text);
     final minutes = int.tryParse(_minutesController.text) ?? 0;
     final seconds = int.tryParse(_secondsController.text) ?? 0;
     final time = minutes * 60 + seconds;
 
-    if (distance == null || seconds >= 60 || time == 0) return;
+    if (distance == null || distance <= 0) {
+      _showValidationError('Distance must be greater than 0.');
+      return;
+    }
+
+    if (minutes < 0 || seconds < 0 || seconds >= 60 || time == 0) {
+      _showValidationError('Please enter a valid time in minutes and seconds.');
+      return;
+    }
 
     final session = Session(
       distance: distance,
@@ -34,10 +48,12 @@ class _NewSessionPageState extends State<NewSessionPage> {
       stroke: _stroke,
       intensity: _intensity,
       date: DateTime.now(),
-      preWorkoutMeal:
-          _preMealController.text.isEmpty ? null : _preMealController.text,
-      postWorkoutMeal:
-          _postMealController.text.isEmpty ? null : _postMealController.text,
+      preWorkoutMeal: _preMealController.text.trim().isEmpty
+          ? null
+          : _preMealController.text.trim(),
+      postWorkoutMeal: _postMealController.text.trim().isEmpty
+          ? null
+          : _postMealController.text.trim(),
       energyLevel: _energy,
     );
 
@@ -45,6 +61,16 @@ class _NewSessionPageState extends State<NewSessionPage> {
     Navigator.pop(context);
   }
 
+
+  @override
+  void dispose() {
+    _distanceController.dispose();
+    _minutesController.dispose();
+    _secondsController.dispose();
+    _preMealController.dispose();
+    _postMealController.dispose();
+    super.dispose();
+  }
   Widget sectionTitle(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8, top: 20),
