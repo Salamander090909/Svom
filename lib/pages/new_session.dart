@@ -20,6 +20,19 @@ class _NewSessionPageState extends State<NewSessionPage> {
   String _intensity = 'Medium';
   int _energy = 3;
 
+  final List<String> _strokes = [
+    'Freestyle',
+    'Breaststroke',
+    'Backstroke',
+    'Butterfly',
+  ];
+
+  final List<String> _intensities = [
+    'Low',
+    'Medium',
+    'High',
+  ];
+
   void _saveSession() {
     final distance = double.tryParse(_distanceController.text);
     final minutes = int.tryParse(_minutesController.text) ?? 0;
@@ -50,9 +63,32 @@ class _NewSessionPageState extends State<NewSessionPage> {
       padding: const EdgeInsets.only(bottom: 8, top: 20),
       child: Text(
         text,
-        style: const TextStyle(
-            fontSize: 16, fontWeight: FontWeight.bold),
+        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
       ),
+    );
+  }
+
+  Widget dropdownField({
+    required String label,
+    required String value,
+    required List<String> items,
+    required Function(String?) onChanged,
+  }) {
+    return DropdownButtonFormField<String>(
+      value: value,
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+      ),
+      items: items
+          .map(
+            (item) => DropdownMenuItem(
+              value: item,
+              child: Text(item),
+            ),
+          )
+          .toList(),
+      onChanged: onChanged,
     );
   }
 
@@ -66,6 +102,33 @@ class _NewSessionPageState extends State<NewSessionPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             sectionTitle('Workout'),
+
+            dropdownField(
+              label: 'Stroke',
+              value: _stroke,
+              items: _strokes,
+              onChanged: (value) {
+                setState(() {
+                  _stroke = value!;
+                });
+              },
+            ),
+
+            const SizedBox(height: 12),
+
+            dropdownField(
+              label: 'Intensity',
+              value: _intensity,
+              items: _intensities,
+              onChanged: (value) {
+                setState(() {
+                  _intensity = value!;
+                });
+              },
+            ),
+
+            const SizedBox(height: 12),
+
             TextField(
               controller: _distanceController,
               keyboardType: TextInputType.number,
@@ -74,7 +137,9 @@ class _NewSessionPageState extends State<NewSessionPage> {
                 border: OutlineInputBorder(),
               ),
             ),
+
             const SizedBox(height: 12),
+
             Row(
               children: [
                 Expanded(
@@ -102,6 +167,7 @@ class _NewSessionPageState extends State<NewSessionPage> {
             ),
 
             sectionTitle('Nutrition'),
+
             TextField(
               controller: _preMealController,
               decoration: const InputDecoration(
@@ -109,7 +175,9 @@ class _NewSessionPageState extends State<NewSessionPage> {
                 border: OutlineInputBorder(),
               ),
             ),
+
             const SizedBox(height: 12),
+
             TextField(
               controller: _postMealController,
               decoration: const InputDecoration(
@@ -119,6 +187,7 @@ class _NewSessionPageState extends State<NewSessionPage> {
             ),
 
             sectionTitle('Energy'),
+
             Slider(
               value: _energy.toDouble(),
               min: 1,
@@ -133,6 +202,7 @@ class _NewSessionPageState extends State<NewSessionPage> {
             ),
 
             const SizedBox(height: 30),
+
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -140,8 +210,8 @@ class _NewSessionPageState extends State<NewSessionPage> {
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.all(16),
                   shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(16)),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
                 child: const Text('Save Session'),
               ),

@@ -5,13 +5,11 @@ import 'models/session.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  await Hive.deleteBoxFromDisk('sessions');
-
   await Hive.initFlutter();
 
-  Hive.registerAdapter(SessionAdapter());
+  await Hive.deleteFromDisk(); // SLETTER ALL HIVE DATA FULLSTENDIG
 
+  Hive.registerAdapter(SessionAdapter());
   await Hive.openBox<Session>('sessions');
 
   runApp(const MyApp());
