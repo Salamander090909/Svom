@@ -7,8 +7,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
 
-  await Hive.deleteFromDisk(); // SLETTER ALL HIVE DATA FULLSTENDIG
-
   Hive.registerAdapter(SessionAdapter());
   await Hive.openBox<Session>('sessions');
 

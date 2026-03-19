@@ -33,24 +33,64 @@ class _NewSessionPageState extends State<NewSessionPage> {
     'High',
   ];
 
-  void _saveSession() {
-    final distance = double.tryParse(_distanceController.text);
-    final minutes = int.tryParse(_minutesController.text) ?? 0;
-    final seconds = int.tryParse(_secondsController.text) ?? 0;
-    final time = minutes * 60 + seconds;
+  @override
+  void dispose() {
+    _distanceController.dispose();
+    _minutesController.dispose();
+    _secondsController.dispose();
+    _preMealController.dispose();
+    _postMealController.dispose();
+    super.dispose();
+  }
 
-    if (distance == null || seconds >= 60 || time == 0) return;
+  String? _validateSession(double? distance, int? minutes, int? seconds) {
+    if (distance == null || distance <= 0) {
+      return 'Please enter a valid distance greater than 0.';
+    }
+
+    if (minutes == null || minutes < 0) {
+      return 'Minutes must be 0 or more.';
+    }
+
+    if (seconds == null || seconds < 0 || seconds >= 60) {
+      return 'Seconds must be between 0 and 59.';
+    }
+
+    if (minutes == 0 && seconds == 0) {
+      return 'Time must be longer than 0 seconds.';
+    }
+
+    return null;
+  }
+
+  void _saveSession() {
+    final distance = double.tryParse(_distanceController.text.trim());
+    final minutes = int.tryParse(_minutesController.text.trim());
+    final seconds = int.tryParse(_secondsController.text.trim());
+    final validationMessage = _validateSession(distance, minutes, seconds);
+
+    if (validationMessage != null) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(validationMessage)),
+      );
+      return;
+    }
+
+    final safeMinutes = minutes!;
+    final safeSeconds = seconds!;
+    final trimmedPreMeal = _preMealController.text.trim();
+    final trimmedPostMeal = _postMealController.text.trim();
+    final time = safeMinutes * 60 + safeSeconds;
 
     final session = Session(
-      distance: distance,
+      distance: distance!,
       timeInSeconds: time,
       stroke: _stroke,
       intensity: _intensity,
       date: DateTime.now(),
-      preWorkoutMeal:
-          _preMealController.text.isEmpty ? null : _preMealController.text,
-      postWorkoutMeal:
-          _postMealController.text.isEmpty ? null : _postMealController.text,
+      preWorkoutMeal: trimmedPreMeal.isEmpty ? null : trimmedPreMeal,
+      postWorkoutMeal: trimmedPostMeal.isEmpty ? null : trimmedPostMeal,
       energyLevel: _energy,
     );
 
@@ -131,9 +171,10 @@ class _NewSessionPageState extends State<NewSessionPage> {
 
             TextField(
               controller: _distanceController,
-              keyboardType: TextInputType.number,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(
                 labelText: 'Distance (m)',
+                hintText: 'Example: 1500',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -148,6 +189,7 @@ class _NewSessionPageState extends State<NewSessionPage> {
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
                       labelText: 'Minutes',
+                      hintText: 'Example: 32',
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -159,6 +201,7 @@ class _NewSessionPageState extends State<NewSessionPage> {
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
                       labelText: 'Seconds',
+                      hintText: '0-59',
                       border: OutlineInputBorder(),
                     ),
                   ),
